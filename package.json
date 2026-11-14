@@ -1,0 +1,22 @@
+{
+  "name": "http-proxy",
+  "version": "1.0.0",
+  "description": "Node.js TypeScript HTTP proxy and demo comparing standard GET requests against cacheable HTTP QUERY requests (RFC 10008).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:get": "tsx get-server.ts",
+    "start:query": "tsx query-server.ts",
+    "demo": "bash demo.sh",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

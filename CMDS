@@ -1,0 +1,2 @@
+curl -sL https://www.toptal.com/developers/gitignore/api/node,windows -o .gitignore
+curl.exe -L -o LICENSE.txt https://raw.githubusercontent.com/github/choosealicense.com/gh-pages/_licenses/mit.txt
