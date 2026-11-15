@@ -12,22 +12,37 @@ the criteria sent as JSON in the request body.
 
 ## 📚 Contents
 
-- [Overview](#-overview)
-- [Features](#-features)
-- [Technology stack](#-technology-stack)
-- [Requirements](#-requirements)
-- [Getting started](#-getting-started)
-- [Running the servers](#-running-the-servers)
-- [HTTP API](#-http-api)
-- [Query behavior](#-query-behavior)
-- [Demo script](#-demo-script)
-- [Project structure](#-project-structure)
-- [Configuration](#-configuration)
-- [Development and validation](#-development-and-validation)
-- [Troubleshooting](#-troubleshooting)
-- [Limitations and security notes](#-limitations-and-security-notes)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [HTTP GET vs. QUERY Demo](#http-get-vs-query-demo)
+  - [📚 Contents](#-contents)
+  - [🔎 Overview](#-overview)
+  - [✨ Features](#-features)
+  - [🧰 Technology stack](#-technology-stack)
+  - [✅ Requirements](#-requirements)
+  - [🚀 Getting started](#-getting-started)
+  - [🖥️ Running the servers](#️-running-the-servers)
+    - [Start the GET server](#start-the-get-server)
+    - [Start the QUERY server](#start-the-query-server)
+  - [🌐 HTTP API](#-http-api)
+    - [`GET /contacts`](#get-contacts)
+    - [`QUERY /contacts`](#query-contacts)
+      - [Status codes and headers](#status-codes-and-headers)
+  - [🧠 Query behavior](#-query-behavior)
+  - [🧪 Demo script](#-demo-script)
+  - [🗂️ Project structure](#️-project-structure)
+  - [⚙️ Configuration](#️-configuration)
+  - [🛠️ Development and validation](#️-development-and-validation)
+    - [Type-check](#type-check)
+    - [Available npm scripts](#available-npm-scripts)
+    - [TypeScript notes](#typescript-notes)
+  - [🩹 Troubleshooting](#-troubleshooting)
+    - [`EADDRINUSE` or a port is already in use](#eaddrinuse-or-a-port-is-already-in-use)
+    - [The QUERY server rejects the request or the method is not recognized](#the-query-server-rejects-the-request-or-the-method-is-not-recognized)
+    - [The demo script cannot write its log files](#the-demo-script-cannot-write-its-log-files)
+    - [`npm run demo` runs `demo-server.sh` and `npm run server` runs `server.sh`.](#npm-run-demo-runs-demo-serversh-and-npm-run-server-runs-serversh)
+    - [`npm test` fails](#npm-test-fails)
+  - [🔐 Limitations and security notes](#-limitations-and-security-notes)
+  - [🤝 Contributing](#-contributing)
+  - [📄 License](#-license)
 
 ## 🔎 Overview
 
@@ -248,9 +263,8 @@ The `logs` directory is required because the script redirects server output to
 script itself. Keep both ports (`3000` and `3001`) free before starting.
 
 > [!NOTE]
-> The package script `npm run demo` currently points to `bash demo.sh`, but this
-> repository contains `demo-server.sh`, not `demo.sh`. Use the command above
-> unless the package script is updated.
+> The package script `npm run demo` currently points to `bash demo-server.sh`, and
+> `npm run server` points to `bash server.sh`.
 
 [`server.sh`](./server.sh) is another shell script in the repository, but its
 current readiness loop can wait indefinitely while a server is responding.
@@ -310,7 +324,8 @@ It checks the TypeScript source without generating output files.
 | `npm run start:get` | Start the GET server with `tsx` |
 | `npm run start:query` | Start the QUERY server with `tsx` |
 | `npm run typecheck` | Type-check without emitting files |
-| `npm run demo` | Currently misconfigured: points to missing `demo.sh` |
+| `npm run demo` | Currently points to `demo-server.sh` |
+| `npm run server` | Currently points to `server.sh` |
 | `npm test` | Placeholder that exits with “no test specified”; no automated test suite is configured |
 
 The shell demonstration exercises a small set of HTTP cases, but it is not a
@@ -351,9 +366,9 @@ mkdir -p logs
 
 Also ensure you are using Bash and running the command from the project root.
 
-### `npm run demo` cannot find `demo.sh`
+### `npm run demo` runs `demo-server.sh` and `npm run server` runs `server.sh`.
 
-Run `bash demo-server.sh` instead (after creating `logs/`). The npm script and
+Run `bash demo-server.sh` or `bash server.sh` instead (after creating `logs/`). The npm script and
 the checked-in filename are currently inconsistent.
 
 ### `npm test` fails
@@ -397,6 +412,3 @@ Before opening a change:
 ## 📄 License
 
 The repository includes an MIT license in [`LICENSE.txt`](./LICENSE.txt).
-`package.json` currently declares `ISC`, which is inconsistent with that file;
-the license metadata should be reconciled before publishing or packaging this
-project.

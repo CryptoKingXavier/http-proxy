@@ -7,12 +7,13 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:get": "tsx get-server.ts",
     "start:query": "tsx query-server.ts",
-    "demo": "bash demo.sh",
+    "demo": "bash demo-server.sh",
+    "server": "bash server.sh",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "module",
   "devDependencies": {
     "@types/node": "^26.6.6",
