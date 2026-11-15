@@ -20,10 +20,10 @@ echo "Starting servers..."
 # Note: Uses Node's native TypeScript execution (Node 22.6+) or tsx/ts-node.
 # Replace `npx tsx` with `node` if using Node.js v23.6+ native TS stripping.
 # Replace `/dev/null` with a corresponding log file.
-./node_modules/.bin/tsx get-server.ts > ./logs/get-server.log 2>&1 &
+./node_modules/.bin/tsx ./src/routes/get-server.ts > /dev/null 2>&1 &
 GET_PID=$!
 
-./node_modules/.bin/tsx query-server.ts > ./logs/query-server.log 2>&1 &
+./node_modules/.bin/tsx ./src/routes/query-server.ts > /dev/null 2>&1 &
 QUERY_PID=$!
 
 # Define a cleanup function to guarantee background server processes are

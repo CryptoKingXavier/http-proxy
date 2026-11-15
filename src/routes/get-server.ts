@@ -8,12 +8,25 @@
 //   - complex queries must be shoehorned into URL encoding
 
 import { createServer } from "node:http";
-import { runQuery, type Contact, type ContactQuery } from "./contacts.ts";
+import { Logger } from "../utils/logger.ts";
+import { runQuery, type Contact, type ContactQuery } from "../lib/contacts.ts";
 
-const PORT = 3000;
+const logger = new Logger({
+	directory: 'src/logs',
+	filename: 'get-server.log'
+})
+
+const PORT = process.env.GET_PORT ?? 3000;
 const QUERY_MEDIA_TYPE = "application/json";
 
-createServer((req, res) => {
+// Initialize logging infrastructure before accepting requests.
+createServer(async (req, res) => {
+	await logger.initialize();
+
+	// Register request lifecycle logging.
+	logger.request(req, res);
+
+	// Your API routing logic.
 	const url = new URL(req.url ?? "/", `http://${req.headers.host}`);
 
 	if (url.pathname !== "/contacts") {
@@ -39,6 +52,8 @@ createServer((req, res) => {
 	res
 		.writeHead(200, { "Content-Type": QUERY_MEDIA_TYPE })
 		.end(JSON.stringify({ results }, null, 2) + "\n");
+
+	void logger.flush();
 }).listen(PORT, () => {
 	console.log(
 		`GET server:  http://localhost:${PORT}/contacts?match=example.com&limit=2`,

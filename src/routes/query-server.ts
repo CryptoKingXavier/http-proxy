@@ -14,10 +14,16 @@
 //   - Accept-Query response header advertises supported query media types
 //   - OPTIONS lists QUERY in Allow for discovery
 
+import { Logger } from "../utils/logger.js";
 import { createServer, type IncomingMessage } from "node:http";
-import { runQuery, type ContactQuery } from "./contacts.ts";
+import { runQuery, type ContactQuery } from "../lib/contacts.ts";
 
-const PORT = 3001;
+const logger = new Logger({
+	directory: 'src/logs',
+	filename: 'query-server.log'
+})
+
+const PORT = process.env.QUERY_PORT ?? 3001;
 const QUERY_MEDIA_TYPE = "application/json";
 
 function readBody(req: IncomingMessage): Promise<string> {
@@ -45,7 +51,14 @@ function isContactQuery(value: unknown): value is ContactQuery {
 	);
 }
 
+// Initialize logging infrastructure before accepting requests.
 createServer(async (req, res) => {
+	await logger.initialize();
+
+	// Register request lifecycle logging.
+	logger.request(req, res);
+
+	// Your API routing logic.
 	const url = new URL(req.url ?? "/", `http://${req.headers.host}`);
 
 	if (url.pathname !== "/contacts") {
@@ -117,6 +130,8 @@ createServer(async (req, res) => {
 			"Accept-Query": QUERY_MEDIA_TYPE,
 		})
 		.end(JSON.stringify({ results }, null, 2) + "\n");
+
+	void logger.flush();
 }).listen(PORT, () => {
 	console.log(
 		`QUERY server:  http://localhost:${PORT}/contacts (send QUERY with a JSON body)`,
