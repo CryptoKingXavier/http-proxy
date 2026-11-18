@@ -14,6 +14,7 @@
 //   - Accept-Query response header advertises supported query media types
 //   - OPTIONS lists QUERY in Allow for discovery
 
+import "dotenv/config";
 import { Logger } from "../utils/logger.js";
 import { createServer, type IncomingMessage } from "node:http";
 import { runQuery, type ContactQuery } from "../lib/contacts.ts";
@@ -23,7 +24,7 @@ const logger = new Logger({
 	filename: 'query-server.log'
 })
 
-const PORT = process.env.QUERY_PORT ?? 3001;
+const PORT = Number(process.env.QUERY_PORT) || 3001;
 const QUERY_MEDIA_TYPE = "application/json";
 
 function readBody(req: IncomingMessage): Promise<string> {

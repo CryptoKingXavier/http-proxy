@@ -1,165 +1,329 @@
-# HTTP GET vs. QUERY Demo
+<div align="center">
 
-A small TypeScript project that compares a conventional `GET` request, with
-search criteria encoded in the URL, to an experimental `QUERY` request, with
-the criteria sent as JSON in the request body.
+# 🌐 HTTP GET vs. QUERY Demo
+
+### TypeScript · Node.js · RFC 10008 · HTTP Observability · Bash
+
+[![GitHub Repository](https://img.shields.io/badge/GitHub-CryptoKingXavier%2Fhttp--proxy-181717?logo=github&logoColor=white)](https://github.com/CryptoKingXavier/http-proxy)
+[![Node.js](https://img.shields.io/badge/Node.js-22+-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![npm](https://img.shields.io/badge/npm-package%20manager-CB3837?logo=npm&logoColor=white)](https://www.npmjs.com/)
+[![dotenv](https://img.shields.io/badge/dotenv-configuration-ECD53F?logo=dotenv&logoColor=black)](https://www.npmjs.com/package/dotenv)
+[![tsx](https://img.shields.io/badge/tsx-TypeScript%20runner-000000)](https://tsx.is/)
+[![Bash](https://img.shields.io/badge/Bash-shell-4EAA25?logo=gnubash&logoColor=white)](https://www.gnu.org/software/bash/)
+[![curl](https://img.shields.io/badge/curl-HTTP%20client-073551?logo=curl&logoColor=white)](https://curl.se/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub Stars](https://img.shields.io/github/stars/CryptoKingXavier/http-proxy?style=social)](https://github.com/CryptoKingXavier/http-proxy/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/CryptoKingXavier/http-proxy?style=social)](https://github.com/CryptoKingXavier/http-proxy/network/members)
+
+**A local HTTP demonstration comparing conventional `GET` queries with the experimental body-based `QUERY` method.**
+
+</div>
 
 > [!IMPORTANT]
-> Despite the repository/package name, this project does **not** implement an
-> HTTP forward or reverse proxy. It runs two local demo servers over a static,
-> in-memory contacts list. It is an educational example, not a production
-> service or a complete protocol-conformance test suite.
+> Despite the repository name, this project is **not** an HTTP forward or reverse proxy.
+> It is a learning demonstration that exposes a shared, in-memory contact-search
+> implementation through two native Node.js HTTP servers.
 
-## 📚 Contents
+---
 
-- [HTTP GET vs. QUERY Demo](#http-get-vs-query-demo)
-  - [📚 Contents](#-contents)
-  - [🔎 Overview](#-overview)
-  - [✨ Features](#-features)
-  - [🧰 Technology stack](#-technology-stack)
-  - [✅ Requirements](#-requirements)
-  - [🚀 Getting started](#-getting-started)
-  - [🖥️ Running the servers](#️-running-the-servers)
-    - [Start the GET server](#start-the-get-server)
-    - [Start the QUERY server](#start-the-query-server)
-  - [🌐 HTTP API](#-http-api)
-    - [`GET /contacts`](#get-contacts)
-    - [`QUERY /contacts`](#query-contacts)
-      - [Status codes and headers](#status-codes-and-headers)
-  - [🧠 Query behavior](#-query-behavior)
-  - [🧪 Demo script](#-demo-script)
-  - [🗂️ Project structure](#️-project-structure)
-  - [⚙️ Configuration](#️-configuration)
-  - [🛠️ Development and validation](#️-development-and-validation)
-    - [Type-check](#type-check)
-    - [Available npm scripts](#available-npm-scripts)
-    - [TypeScript notes](#typescript-notes)
-  - [🩹 Troubleshooting](#-troubleshooting)
-    - [`EADDRINUSE` or a port is already in use](#eaddrinuse-or-a-port-is-already-in-use)
-    - [The QUERY server rejects the request or the method is not recognized](#the-query-server-rejects-the-request-or-the-method-is-not-recognized)
-    - [The demo script cannot write its log files](#the-demo-script-cannot-write-its-log-files)
-    - [`npm run demo` runs `demo-server.sh` and `npm run server` runs `server.sh`.](#npm-run-demo-runs-demo-serversh-and-npm-run-server-runs-serversh)
-    - [`npm test` fails](#npm-test-fails)
-  - [🔐 Limitations and security notes](#-limitations-and-security-notes)
-  - [🤝 Contributing](#-contributing)
-  - [📄 License](#-license)
+## 📚 Table of Contents
+
+- [🔎 Overview](#-overview)
+- [✨ Features](#-features)
+- [🧰 Technology Stack](#-technology-stack)
+- [🏗️ Architecture](#️-architecture)
+- [✅ Requirements](#-requirements)
+- [🚀 Quick Start](#-quick-start)
+- [⚙️ Environment Configuration](#️-environment-configuration)
+- [🖥️ Running the Servers](#️-running-the-servers)
+- [🌐 HTTP API](#-http-api)
+- [🧠 Shared Query Behavior](#-shared-query-behavior)
+- [📊 Logging and Observability](#-logging-and-observability)
+- [🧪 Bash Demos](#-bash-demos)
+- [🗂️ Project Structure](#️-project-structure)
+- [📦 npm Scripts](#-npm-scripts)
+- [🛠️ Development and Validation](#️-development-and-validation)
+- [🩹 Troubleshooting](#-troubleshooting)
+- [🔐 Limitations and Security](#-limitations-and-security)
+- [🗺️ Roadmap](#️-roadmap)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+
+---
 
 ## 🔎 Overview
 
-The project exposes the same simple contact-search operation through two
-different HTTP methods:
+This repository explores two ways to search the same static contact collection:
 
-| Server | Method | URL | Query input |
+| Demo | HTTP method | Route | Query location |
 | --- | --- | --- | --- |
-| GET demo | `GET` | `http://localhost:3000/contacts` | URL query parameters |
-| QUERY demo | `QUERY` | `http://localhost:3001/contacts` | JSON request body |
+| 🟩 GET demonstration | `GET` | `http://localhost:3000/contacts` | URL query parameters |
+| 🟦 QUERY demonstration | `QUERY` | `http://localhost:3001/contacts` | JSON request body |
 
-Both servers use the shared `runQuery` function in [`contacts.ts`](./contacts.ts),
-so the examples compare request transport and protocol handling rather than
-different search implementations.
+Both servers call [`runQuery`](./src/lib/contacts.ts), so differences are about
+HTTP transport, validation, discovery, and logging rather than unrelated search
+implementations.
 
-The QUERY server demonstrates a method whose body can carry structured query
-criteria without putting those criteria in the URL. The source comments
-associate the example with RFC 10008. Treat this repository as a demonstration
-of the behaviors implemented here; it does not claim complete validation of
-every requirement in that specification.
+The QUERY server demonstrates concepts associated with RFC 10008:
+
+- `QUERY` carries structured data in a request body.
+- A resource advertises support with `OPTIONS`.
+- The server declares accepted query media types with `Accept-Query`.
+- The request is rejected for a missing or unsupported `Content-Type`.
+- Malformed JSON or an invalid query shape returns `422`.
+
+This is an experimental protocol demonstration. It is not a complete RFC
+conformance implementation or a production-ready HTTP service.
+
+---
 
 ## ✨ Features
 
-- Side-by-side GET and QUERY examples backed by one shared data/query function.
-- Case-insensitive substring matching against a contact's surname or email.
-- Optional result limiting and field selection.
-- JSON responses with a consistent `{ "results": [...] }` envelope.
-- QUERY request content-type checks and JSON/query-shape validation.
-- QUERY capability discovery through `OPTIONS`, `Allow`, and `Accept-Query`.
-- A shell-based demonstration covering successful requests and selected error
-  responses.
-- TypeScript strict-mode checking.
+- 🟩 Side-by-side **GET** and **QUERY** contact search demonstrations
+- 🧮 Case-insensitive substring matching across surname and email
+- 🔢 Optional result limits with finite-number and floor/clamping handling
+- 🎯 Optional field selection for `surname` and `email`
+- 📦 Shared in-memory contacts and query logic
+- 🌐 JSON responses under a consistent `{ "results": [...] }` envelope
+- 🧾 Mandatory `Content-Type` validation for QUERY requests
+- 🚫 Clear `400`, `415`, and `422` error paths
+- 🧭 `OPTIONS` capability discovery with `Allow` and `Accept-Query`
+- 🪪 Request UUIDs exposed through the `X-Request-ID` response header
+- 📊 Detailed pretty-text or JSON HTTP access logging
+- 🔐 Allowlisted request-header logging to avoid credentials and cookies
+- ⚙️ Environment-variable port and Node environment configuration
+- 🐚 Bash scripts for server lifecycle, curl demonstrations, and cleanup
 
-## 🧰 Technology stack
+---
 
-| Technology | Role |
-| --- | --- |
-| 🟩 [Node.js](https://nodejs.org/) | Runtime and built-in HTTP server (`node:http`) |
-| 🟦 [TypeScript](https://www.typescriptlang.org/) | Typed application source |
-| ⚡ [tsx](https://github.com/privatenumber/tsx) | Runs TypeScript source directly during development |
-| 📦 npm | Dependency installation and package scripts |
-| 🐚 Bash | Optional end-to-end demo orchestration |
-| 🌐 `curl` | HTTP requests in examples and the shell demo |
+## 🧰 Technology Stack
 
-The project has no application framework, database, frontend, build output,
-environment-variable loader, or production deployment configuration.
+| Technology | Badge | Purpose |
+| --- | --- | --- |
+| 🟩 Node.js | ![Node.js](https://img.shields.io/badge/Node.js-native%20HTTP-339933?logo=nodedotjs&logoColor=white) | Runtime, native HTTP server, streams, crypto UUIDs, and filesystem APIs |
+| 🟦 TypeScript | ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white) | Typed models, validators, and server implementation |
+| ⚡ tsx | ![tsx](https://img.shields.io/badge/tsx-direct%20execution-000000) | Executes TypeScript source without a separate build step |
+| 📦 npm | ![npm](https://img.shields.io/badge/npm-dependencies-CB3837?logo=npm&logoColor=white) | Dependency installation and project scripts |
+| 🌱 dotenv | ![dotenv](https://img.shields.io/badge/dotenv-environment-ECD53F) | Loads `GET_PORT`, `QUERY_PORT`, and `NODE_ENV` |
+| 🐚 Bash | ![Bash](https://img.shields.io/badge/Bash-automation-4EAA25?logo=gnubash&logoColor=white) | Starts servers, executes curl checks, and cleans up processes |
+| 🌐 curl | ![curl](https://img.shields.io/badge/curl-HTTP%20testing-073551?logo=curl&logoColor=white) | Sends GET, QUERY, and OPTIONS requests |
+| 📝 MIT License | ![License](https://img.shields.io/badge/License-MIT-yellow.svg) | Permissive open-source license |
+| 🐙 GitHub | ![GitHub](https://img.shields.io/badge/GitHub-source%20hosting-181717?logo=github&logoColor=white) | Source repository, issues, releases, and collaboration |
+
+### Runtime Dependencies
+
+| Package | Version | Role |
+| --- | --- | --- |
+| `dotenv` | `^18.0.10` | Loads values from `.env` |
+
+### Development Dependencies
+
+| Package | Version | Role |
+| --- | --- | --- |
+| `tsx` | `^4.23.15` | Development TypeScript runner |
+| `typescript` | `^7.0.2` | Strict type checking |
+| `@types/node` | `^26.6.6` | Node.js API type definitions |
+
+No web framework, database, container runtime, frontend framework, or separate
+build tool is required.
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+flowchart LR
+    A[Client: curl / HTTP] -->|GET + URL parameters| B[GET Server<br/>src/routes/get-server.ts<br/>Port 3000]
+    A -->|QUERY + JSON body| C[QUERY Server<br/>src/routes/query-server.ts<br/>Port 3001]
+    A -->|OPTIONS| C
+
+    B --> D[dotenv<br/>.env]
+    C --> D
+    B --> E[Logger<br/>src/utils/logger.ts]
+    C --> E
+
+    B --> F[runQuery<br/>src/lib/contacts.ts]
+    C --> F
+
+    F --> G[(In-memory contacts)]
+    E --> H[(src/logs/*.log)]
+```
+
+### Request Flow
+
+#### GET request
+
+1. A request reaches the native Node.js server on port `3000`.
+2. The logger initializes and registers lifecycle monitoring.
+3. The server verifies `/contacts` and the `GET` method.
+4. URL parameters are parsed into a `ContactQuery`.
+5. `runQuery` filters and shapes the static contact list.
+6. JSON is returned beneath a `results` property.
+7. The logger records a request-complete access entry.
+
+#### QUERY request
+
+1. A request reaches the native Node.js server on port `3001`.
+2. The logger initializes and registers lifecycle monitoring.
+3. `OPTIONS` requests return capability headers; all other routes are checked.
+4. `Content-Type` must exist and equal `application/json`.
+5. The body is fully read and parsed.
+6. The object shape is validated.
+7. `runQuery` executes and returns the shaped result.
+8. The logger records status, timing, connection, and response details.
+
+---
 
 ## ✅ Requirements
 
-- Node.js. The QUERY server's source comments state **Node.js 21.7.2 or newer**
-  because the runtime HTTP parser must recognize the `QUERY` method. Prefer a
-  currently supported Node.js release; Node.js 22 or newer is recommended.
-- npm (normally installed with Node.js).
-- For `demo-server.sh`: Bash and `curl`. Its cleanup also uses common Unix-like
-  process/port tools when available (`pkill`, `kill`, `fuser`, or `lsof`).
+### Required
 
-Check the installed runtime:
+- **Node.js 21.7.2 or newer**  
+  The source specifically notes this as the minimum for Node's llhttp parser
+  support for the `QUERY` method. A currently supported Node.js LTS release,
+  preferably Node.js 22 or newer, is recommended.
+- **npm**
+- **Two available local ports:** `3000` and `3001`
 
-```sh
+### Bash Demo Requirements
+
+- Bash
+- `curl`
+- Unix-style process utilities used by the demo:
+  - `pkill`
+  - `kill`
+  - `fuser` or `lsof`
+
+The Bash scripts are best suited to Linux, macOS, WSL, or Git Bash. The direct
+npm servers can be run on any platform supported by Node.js.
+
+Verify tooling:
+
+```bash
 node --version
 npm --version
+curl --version
+bash --version
 ```
 
-The demo shell script is intended for Linux, macOS, WSL, or Git Bash. The
-individual servers can be run with npm on any platform supported by Node.js.
+---
 
-## 🚀 Getting started
+## 🚀 Quick Start
 
-Clone the repository and install the locked dependencies:
-
-```sh
+```bash
 git clone https://github.com/CryptoKingXavier/http-proxy.git
 cd http-proxy
 npm ci
 ```
 
-`npm ci` installs the versions recorded in `package-lock.json`. The runtime
-dependencies are Node.js built-ins; TypeScript, `tsx`, and Node.js type
-definitions are development dependencies.
+Copy or verify `.env` in the repository root:
 
-## 🖥️ Running the servers
-
-Run each server in its own terminal from the repository root.
-
-### Start the GET server
-
-```sh
-npm run start:get
+```dotenv
+GET_PORT=3000
+QUERY_PORT=3001
+NODE_ENV="development"
 ```
 
-It listens on port `3000` and handles `GET /contacts`.
+Start both servers directly with `tsx`:
 
-### Start the QUERY server
-
-```sh
-npm run start:query
+```bash
+npx tsx ./src/routes/get-server.ts
 ```
 
-It listens on port `3001` and handles `QUERY /contacts` plus the `OPTIONS`
-discovery request.
+In another terminal:
 
-Stop either server with `Ctrl+C`. The port numbers are constants in
-[`get-server.ts`](./get-server.ts) and [`query-server.ts`](./query-server.ts);
-there is currently no environment-based port configuration.
+```bash
+npx tsx ./src/routes/query-server.ts
+```
 
-## 🌐 HTTP API
+Alternatively, run the complete Bash demonstration:
 
-### `GET /contacts`
+```bash
+bash ./linux/demo-server.sh
+```
 
-The GET endpoint reads `match`, `limit`, and `select` from the URL.
+The demo script starts both servers, performs successful and negative curl
+checks, prints capability headers, and then shuts the demo processes down.
 
-```sh
+---
+
+## ⚙️ Environment Configuration
+
+The repository includes a root [`.env`](./.env) file.
+
+| Variable | Used by | Default | Purpose |
+| --- | --- | --- | --- |
+| `GET_PORT` | [`get-server.ts`](./src/routes/get-server.ts) | `3000` | GET server listen port |
+| `QUERY_PORT` | [`query-server.ts`](./src/routes/query-server.ts) | `3001` | QUERY server listen port |
+| `NODE_ENV` | Environment/demos | `development` | Documents the current runtime mode |
+
+The GET server explicitly resolves `../../.env` relative to
+`src/routes/get-server.ts`. The QUERY server uses `import "dotenv/config"`,
+which loads the root `.env` based on the process working directory.
+
+Ports are parsed with `Number(...) || fallback`. A missing or invalid variable
+falls back to `3000` or `3001`.
+
+> [!WARNING]
+> `.env` is ignored by Git through [`.gitignore`](./.gitignore). The checked-in
+> file is local configuration and should not contain production secrets.
+
+---
+
+## 🖥️ Running the Servers
+
+### GET Server
+
+```bash
+npx tsx ./src/routes/get-server.ts
+```
+
+Server:
+
+```text
+http://localhost:3000/contacts
+```
+
+Example:
+
+```bash
 curl "http://localhost:3000/contacts?match=example.com&limit=2&select=surname,email"
 ```
 
-The `select` parameter accepts a comma- or period-separated list of field names.
-This request returns JSON similar to:
+### QUERY Server
+
+```bash
+npx tsx ./src/routes/query-server.ts
+```
+
+Server:
+
+```text
+http://localhost:3001/contacts
+```
+
+Example:
+
+```bash
+curl -X QUERY "http://localhost:3001/contacts" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "match": "example.com",
+    "limit": 2,
+    "select": ["surname", "email"]
+  }'
+```
+
+Stop either server with `Ctrl+C`.
+
+---
+
+## 🌐 HTTP API
+
+### Sample Response
+
+Both servers return a JSON envelope:
 
 ```json
 {
@@ -176,239 +340,503 @@ This request returns JSON similar to:
 }
 ```
 
-The sample data has four contacts. The GET endpoint only accepts `GET` for the
-`/contacts` route. Other paths return `404 Not Found`; other methods return
-`405 Method Not Allowed` with `Allow: GET`.
+### 🟩 `GET /contacts`
 
-### `QUERY /contacts`
-
-The QUERY endpoint receives the criteria as a JSON body:
-
-```sh
-curl -X QUERY "http://localhost:3001/contacts" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "match": "example.com",
-    "limit": 2,
-    "select": ["surname", "email"]
-  }'
+```bash
+curl "http://localhost:3000/contacts?match=example&limit=2&select=surname,email"
 ```
 
-The expected shape is an object containing optional fields:
-
-| Field | Type | Behavior |
+| Parameter | Type | Behavior |
 | --- | --- | --- |
-| `match` | string | Case-insensitive substring match in surname or email |
-| `limit` | finite number | Keeps at most the first `limit` results after flooring it |
-| `select` | array of strings | Selects matching fields (`surname`, `email`) |
+| `match` | URL string | Case-insensitive substring match across surname and email |
+| `limit` | URL string | Converted with `Number`; finite values are floored and clamped |
+| `select` | URL string | Comma- or period-separated field names |
 
-The QUERY endpoint validates those known fields before calling the shared
-query function. The response is JSON with the same `results` envelope as GET.
+`select=surname,email` and `select=surname.email` are both split into field
+names. Recognized fields are `surname` and `email`.
 
-#### Status codes and headers
+| Condition | Status |
+| --- | --- |
+| Valid GET request | `200 OK` |
+| Unknown route | `404 Not Found` |
+| Method other than GET | `405 Method Not Allowed` |
 
-| Condition | Status | Response behavior |
-| --- | ---: | --- |
-| Unknown path | `404` | `Not Found` |
-| Method other than QUERY or OPTIONS | `405` | Includes `Allow: QUERY, OPTIONS` and `Accept-Query: application/json` |
-| QUERY request has no `Content-Type` | `400` | The content type is required |
-| QUERY request has an unsupported content type | `415` | Includes `Accept-Query: application/json` |
-| Invalid JSON or invalid known-field types | `422` | The request content cannot be processed |
-| Valid QUERY request | `200` | JSON response and `Accept-Query: application/json` |
-| OPTIONS request to the contacts route | `204` | Includes `Allow: QUERY, OPTIONS` and `Accept-Query: application/json` |
+### 🟦 `QUERY /contacts`
 
-For example, discover the QUERY capability with:
+The request body must be a JSON object:
 
-```sh
+```json
+{
+  "match": "example.com",
+  "limit": 2,
+  "select": ["surname", "email"]
+}
+```
+
+| Field | Required | Type | Behavior |
+| --- | --- | --- | --- |
+| `match` | No | `string` | Case-insensitive substring match |
+| `limit` | No | finite `number` | Maximum number of contacts; floored and clamped |
+| `select` | No | `string[]` | Requested output fields |
+
+#### Missing `Content-Type`
+
+```bash
+curl -X QUERY "http://localhost:3001/contacts" \
+  -d '{"match":"example.com"}'
+```
+
+Expected status:
+
+```text
+400 Bad Request
+```
+
+#### Unsupported `Content-Type`
+
+```bash
+curl -X QUERY "http://localhost:3001/contacts" \
+  -H "Content-Type: text/plain" \
+  -d 'match=example.com'
+```
+
+Expected status:
+
+```text
+415 Unsupported Media Type
+Accept-Query: application/json
+```
+
+#### Invalid JSON
+
+```bash
+curl -X QUERY "http://localhost:3001/contacts" \
+  -H "Content-Type: application/json" \
+  -d '{invalid-json'
+```
+
+Expected status:
+
+```text
+422 Unprocessable Content
+```
+
+#### Invalid Query Shape
+
+```bash
+curl -X QUERY "http://localhost:3001/contacts" \
+  -H "Content-Type: application/json" \
+  -d '{"limit":"two"}'
+```
+
+The server requires `limit` to be a finite number when provided.
+
+### 🧭 Capability Discovery
+
+```bash
 curl -i -X OPTIONS "http://localhost:3001/contacts"
 ```
 
-The advertised query media type is `application/json`.
-
-## 🧠 Query behavior
-
-The shared function in [`contacts.ts`](./contacts.ts) applies these rules:
-
-1. If `match` is present, it is lowercased and matched as a substring against
-   each contact's `surname` and `email`, also case-insensitively.
-2. If `limit` is a finite number, it is floored and clamped to a minimum of
-   zero before slicing the result list. A negative limit therefore produces an
-   empty list.
-3. If `select` is omitted, each result contains both fields. Otherwise, only
-   recognized field names (`surname` and `email`) are copied into each result.
-4. An empty `match` string matches every contact. Unrecognized `select` names
-   are ignored; if none of the requested fields are recognized, each result is
-   an empty object.
-
-The `Contact` and `ContactQuery` types describe the in-memory records and query
-input. This demo does not perform ranking, sorting, pagination cursors, or
-database lookups.
-
-## 🧪 Demo script
-
-[`demo-server.sh`](./demo-server.sh) starts both TypeScript servers, waits for
-them to accept connections, runs GET and QUERY examples, checks selected
-validation failures, inspects the OPTIONS headers, and then attempts to stop the
-servers.
-
-Run it from Bash at the repository root:
-
-```sh
-mkdir -p logs
-bash demo-server.sh
-```
-
-The `logs` directory is required because the script redirects server output to
-`logs/get-server.log` and `logs/query-server.log`. It is not created by the
-script itself. Keep both ports (`3000` and `3001`) free before starting.
-
-> [!NOTE]
-> The package script `npm run demo` currently points to `bash demo-server.sh`, and
-> `npm run server` points to `bash server.sh`.
-
-[`server.sh`](./server.sh) is another shell script in the repository, but its
-current readiness loop can wait indefinitely while a server is responding.
-Prefer the npm commands for running servers or `demo-server.sh` for the
-demonstration.
-
-## 🗂️ Project structure
+An active resource returns:
 
 ```text
-.
-├── contacts.ts       # Contact/query types, in-memory sample records, shared search
-├── get-server.ts     # GET /contacts server on port 3000
-├── query-server.ts   # QUERY /contacts and OPTIONS server on port 3001
-├── demo-server.sh    # Starts both servers and runs curl demonstrations
-├── server.sh         # Alternate/legacy server shell script
-├── CMDS              # Stored setup/download shell commands
-├── package.json      # npm scripts and development dependencies
-├── package-lock.json # Locked npm dependency graph
-├── tsconfig.json     # TypeScript compiler settings
-├── .gitignore        # Ignore rules for Node.js and Windows artifacts
-└── LICENSE.txt       # MIT license text
+HTTP/1.1 204 No Content
+Allow: QUERY, OPTIONS
+Accept-Query: application/json
 ```
 
-`node_modules/` is generated locally by npm and is not source code.
+### Status Summary
 
-## ⚙️ Configuration
+| Condition | Status | Important headers |
+| --- | ---: | --- |
+| Unknown route | `404` | — |
+| Unsupported method | `405` | `Allow: QUERY, OPTIONS` and/or `Allow: GET` |
+| Missing QUERY content type | `400` | — |
+| Unsupported QUERY media type | `415` | `Accept-Query: application/json` |
+| Invalid JSON or query shape | `422` | — |
+| Successful QUERY | `200` | `Content-Type: application/json`, `Accept-Query: application/json` |
+| Successful OPTIONS | `204` | `Allow: QUERY, OPTIONS`, `Accept-Query: application/json` |
 
-There is no `.env` file or runtime configuration layer. Current settings are
-defined in source:
+---
 
-| Setting | Location | Current value |
+## 🧠 Shared Query Behavior
+
+The shared [`runQuery`](./src/lib/contacts.ts) function operates on this static
+contact collection:
+
+| Surname | Email |
+| --- | --- |
+| Lovelace | `ada@example.com` |
+| Hopper | `grace@example.com` |
+| Turing | `alan@computing.example` |
+| Hamilton | `margaret@software.example` |
+
+Rules:
+
+1. If `match` is omitted or `undefined`, every contact is eligible.
+2. Matching is case-insensitive and tests surname and email substrings.
+3. Finite numeric limits are floored and clamped to at least zero.
+4. A negative limit therefore produces an empty result.
+5. Omitting `select` returns both fields.
+6. With `select`, only recognized `surname` and `email` names are retained.
+7. The shared implementation is stateless and does not mutate the contact array.
+
+The query model also supports exact optional-property types through TypeScript:
+
+```typescript
+export type ContactQuery = {
+  match?: string | undefined;
+  limit?: number | undefined;
+  select?: string[] | undefined;
+};
+```
+
+---
+
+## 📊 Logging and Observability
+
+Both servers use [`src/utils/logger.ts`](./src/utils/logger.ts), a native
+Node.js HTTP observability logger.
+
+### Default Logger Behavior
+
+| Setting | Default |
+| --- | --- |
+| Log level | `DEBUG` |
+| Destination | `both` |
+| Format | `pretty` |
+| Directory | `src/logs` for both servers |
+| Query logging | Disabled |
+| Request UUID headers | Enabled |
+| User agent/IP logging | Enabled |
+| Directory creation | Enabled |
+
+Each server creates a dedicated file:
+
+- [`src/logs/get-server.log`](./src/logs/get-server.log)
+- [`src/logs/query-server.log`](./src/logs/query-server.log)
+
+### Logged Information
+
+The access logger includes:
+
+- UUID request IDs
+- Timestamp and HTTP method
+- URL/path/host/hostname
+- Optional query-string data
+- HTTP version and protocol
+- IP address and remote port
+- User agent and common accept headers
+- Allowlisted safe request headers
+- Response status, content type, and socket state
+- Duration in milliseconds
+- Socket byte counters
+- Keep-alive state
+- Captured request/response errors
+- Connection-aborted detection
+
+The logger automatically sets:
+
+```text
+X-Request-ID: <UUID>
+```
+
+It deliberately excludes authorization, cookie, and set-cookie headers from
+safe request metadata.
+
+### Safe Data Behavior
+
+The default query-string setting is `includeQuery: false`, so the
+`GET /contacts?match=...` query is normally excluded from ordinary access
+records. Enable `includeQuery` only if the logged application can safely retain
+the URL parameters.
+
+File writes are ordered through an in-memory promise queue. `logger.flush()`
+waits for queued writes before the process continues.
+
+---
+
+## 🧪 Bash Demos
+
+### Full HTTP Demo
+
+[`linux/demo-server.sh`](./linux/demo-server.sh) is the interactive end-to-end
+demonstration.
+
+```bash
+bash ./linux/demo-server.sh
+```
+
+It:
+
+1. Starts the GET and QUERY servers with local `tsx` binaries.
+2. Polls both ports before displaying readiness.
+3. Runs a GET example.
+4. Runs an equivalent QUERY example.
+5. Checks missing and unsupported content types.
+6. Checks malformed JSON.
+7. Requests OPTIONS capability headers.
+8. Attempts to terminate spawned servers and orphaned port users.
+
+### Long-Running Server Demo
+
+[`linux/server.sh`](./linux/server.sh) starts both servers and waits for their
+ports without running curl demonstrations.
+
+```bash
+bash ./linux/server.sh
+```
+
+Stop it with `Ctrl+C`. Its cleanup trap terminates both server processes.
+
+### Server Output
+
+The scripts send process output to `/dev/null` because request output is written
+to the configured application log files instead. The server startup banner and
+demo output remain visible in the terminal.
+
+---
+
+## 🗂️ Project Structure
+
+```text
+http-proxy/
+├── .env                       # Local GET_PORT, QUERY_PORT, NODE_ENV
+├── .gitignore                 # Node, Windows, logs, IDE, and environment ignores
+├── LICENSE                    # MIT license
+├── README.md                  # Project documentation
+├── package.json               # Package metadata and scripts
+├── package-lock.json          # Reproducible npm dependency lock
+├── tsconfig.json              # Strict TypeScript/Nodenext configuration
+├── linux/
+│   ├── demo-server.sh         # End-to-end curl demonstrations
+│   └── server.sh              # Start both servers and wait
+└── src/
+    ├── lib/
+    │   ├── CMDS               # Initial setup/download commands
+    │   └── contacts.ts        # Contact types and shared query implementation
+    ├── logs/
+    │   ├── get-server.log     # GET access logs
+    │   └── query-server.log   # QUERY access logs
+    ├── routes/
+    │   ├── get-server.ts      # GET /contacts server on port 3000
+    │   └── query-server.ts    # QUERY /contacts server on port 3001
+    └── utils/
+        └── logger.ts          # Native HTTP observability logger
+```
+
+---
+
+## 📦 npm Scripts
+
+| Command | Configured command | Status |
 | --- | --- | --- |
-| GET server port | `get-server.ts` | `3000` |
-| QUERY server port | `query-server.ts` | `3001` |
-| Query/response media type | Both server files | `application/json` |
-| Sample contact records | `contacts.ts` | Four in-memory records |
+| `npm run start:get` | `tsx get-server.ts` | ⚠️ Stale: file is now [`src/routes/get-server.ts`](./src/routes/get-server.ts) |
+| `npm run start:query` | `tsx query-server.ts` | ⚠️ Stale: file is now [`src/routes/query-server.ts`](./src/routes/query-server.ts) |
+| `npm run demo` | `bash demo-server.sh` | ⚠️ Stale: script is now [`linux/demo-server.sh`](./linux/demo-server.sh) |
+| `npm run server` | `bash server.sh` | ⚠️ Stale: script is now [`linux/server.sh`](./linux/server.sh) |
+| `npm run typecheck` | `tsc --noEmit` | ✅ Type-check script |
+| `npm test` | Placeholder exit | ⚠️ No automated test suite |
 
-Change the corresponding source constants/data to customize this demonstration.
-The application does not persist updates: restarting a server restores the
-same hard-coded sample contacts.
+Use the direct commands documented in this README until package scripts are
+updated.
 
-## 🛠️ Development and validation
+---
 
-### Type-check
+## 🛠️ Development and Validation
 
-```sh
+### Install Dependencies
+
+```bash
+npm ci
+```
+
+### Type Check
+
+```bash
 npm run typecheck
 ```
 
-This runs `tsc --noEmit` with the strict options in [`tsconfig.json`](./tsconfig.json).
-It checks the TypeScript source without generating output files.
+The TypeScript configuration enables:
 
-### Available npm scripts
+- ECMAScript modules
+- NodeNext module resolution
+- `target: esnext`
+- `.ts` import support
+- Strict mode
+- Exact optional property types
+- No unchecked indexed access
+- Verbose module detection
+- No emitted JavaScript
 
-| Command | Purpose |
-| --- | --- |
-| `npm run start:get` | Start the GET server with `tsx` |
-| `npm run start:query` | Start the QUERY server with `tsx` |
-| `npm run typecheck` | Type-check without emitting files |
-| `npm run demo` | Currently points to `demo-server.sh` |
-| `npm run server` | Currently points to `server.sh` |
-| `npm test` | Placeholder that exits with “no test specified”; no automated test suite is configured |
+### Manual HTTP Validation
 
-The shell demonstration exercises a small set of HTTP cases, but it is not a
-unit-test framework or a complete regression/conformance suite.
+Start the servers:
 
-### TypeScript notes
+```bash
+npx tsx ./src/routes/get-server.ts
+npx tsx ./src/routes/query-server.ts
+```
 
-- The package uses ECMAScript modules (`"type": "module"`).
-- Imports use explicit `.ts` extensions, enabled by
-  `allowImportingTsExtensions`.
-- `module` is set to `nodenext`, and strict type checking is enabled.
-- The source is run directly by `tsx`; a separate build/transpile command is
-  not defined.
+Exercise success and failure cases:
+
+```bash
+curl "http://localhost:3000/contacts?match=example&limit=2"
+curl -X OPTIONS "http://localhost:3001/contacts" -i
+curl -X QUERY "http://localhost:3001/contacts" \
+  -H "Content-Type: application/json" \
+  -d '{"match":"example","limit":2,"select":["surname","email"]}'
+curl -X QUERY "http://localhost:3001/contacts" \
+  -H "Content-Type: application/json" \
+  -d '{invalid-json'
+```
+
+### Test Status
+
+The repository does not currently contain:
+
+- A unit-test framework
+- Integration test assertions
+- Coverage configuration
+- CI workflows
+- An HTTP server test harness
+- A build/distribution command
+
+`npm test` is only a placeholder and should not be used as a validation result.
+
+---
 
 ## 🩹 Troubleshooting
 
-### `EADDRINUSE` or a port is already in use
+### `EADDRINUSE`
 
-Another process is using port `3000` or `3001`. Stop that process or change the
-port constant in the relevant server file, then restart the server.
+A process is already using port `3000` or `3001`.
 
-### The QUERY server rejects the request or the method is not recognized
-
-- Check `node --version`; use a current Node.js release (Node.js 22+ is
-  recommended).
-- Ensure the request method is exactly `QUERY`.
-- Set `Content-Type: application/json`.
-- Send a JSON object; `match` must be a string, `limit` a finite number, and
-  `select` an array of strings when provided.
-
-### The demo script cannot write its log files
-
-Create the expected directory before running the script:
-
-```sh
-mkdir -p logs
+```bash
+# Linux/macOS
+lsof -i :3000
+lsof -i :3001
 ```
 
-Also ensure you are using Bash and running the command from the project root.
+Stop the conflicting process or change `.env` to new available ports.
 
-### `npm run demo` runs `demo-server.sh` and `npm run server` runs `server.sh`.
+### QUERY Is Not Recognized
 
-Run `bash demo-server.sh` or `bash server.sh` instead (after creating `logs/`). The npm script and
-the checked-in filename are currently inconsistent.
+- Verify Node.js is 21.7.2 or newer; Node.js 22+ is recommended.
+- Confirm the method is exactly `QUERY`.
+- Confirm `Content-Type: application/json`.
+- Send a JSON object, not an array or primitive.
 
-### `npm test` fails
+### The Server Cannot Find `.env`
 
-This is the current package placeholder, not a test failure in application
-code. There is no automated test suite configured.
+Run both servers from the repository root:
 
-## 🔐 Limitations and security notes
+```bash
+cd http-proxy
+npx tsx ./src/routes/get-server.ts
+```
 
-- This is a local learning/demo application, not a general-purpose proxy or
-  production-ready API.
-- It binds using Node's default server host behavior and has no authentication,
-  authorization, TLS configuration, CORS policy, rate limiting, or persistence.
-- The QUERY implementation buffers the full request body in memory and does
-  not impose a request-body size limit. Do not expose it to untrusted clients.
-- Error responses and validation are intentionally minimal. There is no
-  centralized error middleware, structured logging, or operational monitoring.
-- The QUERY server checks the known query properties' types, but this should not
-  be treated as a complete schema or protocol validation layer.
-- The shell cleanup attempts to terminate demo processes and may use
-  port-oriented fallback tools. Run the demonstration only in a local
-  development environment where those ports are dedicated to this demo.
-- The repository is named `http-proxy`, but no proxying, forwarding, or
-  destination selection is implemented.
+The GET server has an explicit relative `.env` resolution. The QUERY server
+also imports dotenv configuration.
+
+### Logs Are Missing
+
+The logger creates `src/logs` automatically. Ensure the process can write in
+the repository directory.
+
+### Bash Script Shows a 404 While Waiting
+
+The readiness loop can receive `/` requests because it only waits for the server
+socket to respond. Port readiness is valid even though `/` itself is a `404`
+when it is not one of the defined routes.
+
+### npm Server Scripts Fail
+
+The four server/demo scripts in `package.json` have stale paths:
+
+```bash
+npx tsx ./src/routes/get-server.ts
+npx tsx ./src/routes/query-server.ts
+bash ./linux/demo-server.sh
+bash ./linux/server.sh
+```
+
+---
+
+## 🔐 Limitations and Security
+
+- This is a demonstration, not a production reverse or forward proxy.
+- There is no authentication or authorization.
+- There is no TLS/HTTPS implementation.
+- There is no CORS policy.
+- There is no request-body size limit.
+- The QUERY body is buffered fully into memory.
+- The contact store is static and not persistent.
+- The server does not implement routing middleware or a framework.
+- It does not provide structured API schema generation.
+- Logging is local and has no rotation or external log shipping.
+- The Bash cleanup script may terminate processes associated with demo ports;
+  run it only in a dedicated development environment.
+- The repository name and package description use “proxy”, but no forwarding
+  destination or proxy behavior exists.
+- Logger query logging is disabled by default to avoid accidental sensitive
+  URL parameter retention.
+
+---
+
+## 🗺️ Roadmap
+
+Potential follow-up improvements:
+
+- [ ] Repair stale npm scripts for the current `src/` and `linux/` layout
+- [ ] Add Jest, Node test runner, Vitest, or another test framework
+- [ ] Add integration tests for GET, QUERY, OPTIONS, and error responses
+- [ ] Make ports and host names fully configurable
+- [ ] Add request-body size limits
+- [ ] Add graceful shutdown handling
+- [ ] Add log rotation and configurable logger destinations
+- [ ] Add CI for type-checking and HTTP integration tests
+- [ ] Add Docker or Dev Container support
+- [ ] Add formal OpenAPI or API description metadata
+- [ ] Remove or clarify proxy wording if the project remains educational
+
+---
 
 ## 🤝 Contributing
 
-Contributions should keep the GET and QUERY paths behaviorally aligned through
-the shared query function and keep documentation examples executable against
-the actual scripts and routes.
+Contributions are welcome for documentation, protocol demonstrations, tests,
+logging improvements, and script reliability.
 
-Before opening a change:
+Before submitting a change:
 
-1. Install dependencies with `npm ci`.
-2. Run `npm run typecheck`.
-3. If HTTP behavior changes, exercise both endpoints and the relevant error
-   cases with `curl` or the demo script.
-4. Update this README when routes, fields, status codes, dependencies, or run
-   commands change.
+1. Fork the repository on GitHub.
+2. Create a descriptive feature branch.
+3. Keep GET and QUERY behavior aligned through `src/lib/contacts.ts`.
+4. Run:
+
+   ```bash
+   npm ci
+   npm run typecheck
+   bash ./linux/demo-server.sh
+   ```
+
+5. Update documentation for new paths, scripts, ports, fields, headers, or
+   environment variables.
+6. Open a pull request with the observed behavior and test results.
+
+---
 
 ## 📄 License
 
-The repository includes an MIT license in [`LICENSE.txt`](./LICENSE.txt).
+This project is licensed under the **MIT License**.
+
+See [`LICENSE`](./LICENSE) for the complete terms.
+
+<div align="center">
+
+**[⬆ Back to top](#-http-get-vs-query-demo)**
+
+[![GitHub Repository](https://img.shields.io/badge/View%20on-GitHub-181717?logo=github&logoColor=white)](https://github.com/CryptoKingXavier/http-proxy)
+[![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
+</div>

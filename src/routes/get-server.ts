@@ -7,16 +7,23 @@
 //   - the whole query lives in the URI (length limits, shows up in logs/history - cacheable)
 //   - complex queries must be shoehorned into URL encoding
 
+import dotenv from "dotenv";
+import path from "node:path";
 import { createServer } from "node:http";
+import { fileURLToPath } from "node:url";
 import { Logger } from "../utils/logger.ts";
 import { runQuery, type Contact, type ContactQuery } from "../lib/contacts.ts";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Resolves two levels up from src/routes to http-proxy/.env
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const logger = new Logger({
 	directory: 'src/logs',
 	filename: 'get-server.log'
 })
 
-const PORT = process.env.GET_PORT ?? 3000;
+const PORT = Number(process.env.GET_PORT) || 3000;
 const QUERY_MEDIA_TYPE = "application/json";
 
 // Initialize logging infrastructure before accepting requests.
